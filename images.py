@@ -32,23 +32,43 @@ images_to_generate = 15  # qtd de imagens que vai gerar
 i = 1                   # variavel para inteirar no images_to_generate
 
 
-def rotacao_ahrr(image):
+def rotacao(image):
+    # points for test.jpg
+    cnt = np.array([
+            [[750, 250]],
+            [[0, 500]],
+            [[1000, 1050]],
+            [[1000, 500]]
+        ])
+    
+    rect = cv2.minAreaRect(cnt)
+    
 
-#Função responsável por fazer a rotação anti-horaria da imagem.
-#Entrada: Imagem
-#Saída: Imagem rotacionada entre 0 a 180° no sentindo anti-horario
+    # the order of the box points: bottom left, top left, top right,
+    # bottom right
+    box = cv2.boxPoints(rect)
+    box = np.int0(box)
 
-    angle = random.randint(0, 180)
-    return rotate(image, angle)
+    # get width and height of the detected rectangle
+    width = int(rect[1][0])
+    height = int(rect[1][1])
 
-def rotacao_hrr(image):
+    src_pts = box.astype("float32")
+    # coordinate of the points in box points after the rectangle has been
+    # straightened
+    dst_pts = np.array([[0, height-1],
+                        [0, 0],
+                        [width-1, 0],
+                        [width-1, height-1]], dtype="float32")
 
-#Função responsável por fazer a rotação horaria da imagem.
-#Entrada: Imagem
-#Saída: Imagem rotacionada entre 0 a 180° no sentindo horario
+    # the perspective transformation matrix
+    M = cv2.getPerspectiveTransform(src_pts, dst_pts)
 
-    angle = random.randint(0, 180)
-    return rotate(image, -angle)
+    # directly warp the rotated rectangle to get the straightened rectangle
+    warped = cv2.warpPerspective(image, M, (width, height))
+
+    return warped
+   
 
 def hrz_vira(image):
 
@@ -111,8 +131,7 @@ def zoom(image):
     return image
 
 # Dicionario para ativar as funcoes
-transformations = {'Rotacao anti-horaria': rotacao_ahrr,
-                   'Rotacao horaria': rotacao_hrr,
+transformations = {'Rotacao': rotacao,
                    'Horizontal flip': hrz_vira,
                    'Vertical flip': vtc_vira,
                    'Ruidos': ruidos_img,
