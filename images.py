@@ -11,6 +11,7 @@ from skimage.exposure import rescale_intensity
 from skimage.segmentation import slic
 from skimage.util import img_as_float
 import random
+import csv
 
 if os.path.isdir('foto_simulador') == False:
     print('A pasta "foto_simulador" não existe. Criando diretório.')
@@ -140,6 +141,9 @@ transformations = {'Rotacao': rotacao,
                    'Zoom': zoom
                   }
 
+
+
+data = []
 while i <= images_to_generate:
     image = random.choice(images)
     original_image = io.imread(image)
@@ -147,12 +151,14 @@ while i <= images_to_generate:
     n = 0       # variável para iterar até o número de transformação
 # escolha um número aleatório de transformação para aplicar na imagem
     transformation_count = random.randint(1, len(transformations))
+    
     while n <= transformation_count:
         # Escolha aleatorio do metodo a ser aplicado
         key = random.choice(list(transformations))
         print(key)
         transformed_image = transformations[key](original_image)
         n += 1
+    nome = "augmented_image_%s.jpg" % (i)
     new_image_path = "%s/augmented_image_%s.jpg" % (augmented_path, i)
     # Converta uma imagem para o formato de byte sem sinal, com valores em [0, 255].
     transformed_image = img_as_ubyte(transformed_image)
@@ -161,3 +167,12 @@ while i <= images_to_generate:
     # Salvar a imagem ja convertida
     cv2.imwrite(new_image_path, transformed_image)
     i = i+1
+    height, width, channels = transformed_image.shape
+    tentativa = (nome, height, width, 'pista', 0, 0, 0, 0)
+    data.append(tentativa)
+    
+
+with open('teste.csv', "w", newline='') as file:
+        writer = csv.writer(file)
+        writer.writerow(["filename", "width", "height", "class", "xmin", "ymin", "xmax", "ymax"])
+        writer.writerows(data)    
