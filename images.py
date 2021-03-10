@@ -12,6 +12,8 @@ from skimage.segmentation import slic
 from skimage.util import img_as_float
 import random
 import csv
+import xml.etree.ElementTree as ET
+
 
 if os.path.isdir('foto_simulador') == False:
     print('A pasta "foto_simulador" não existe. Criando diretório.')
@@ -29,8 +31,42 @@ else:
 images = []
 for im in os.listdir(images_path):
     images.append(os.path.join(images_path, im))
-images_to_generate = 15  # qtd de imagens que vai gerar
-i = 1                   # variavel para inteirar no images_to_generate
+images_to_generate = 1  # qtd de imagens que vai gerar
+#images_to_generate = images_to_generate*2
+i = 0                   # variavel para inteirar no images_to_generate
+
+
+def minmax(img2):
+    # Create a black image
+    #img = np.zeros((200,300,3), np.uint8)
+    #cv2.rectangle(img,(xmin,ymin),(xmax,ymax),(255,255,255),-1)
+ 
+    #MUDANCAS
+
+    # Find Canny edges 
+    edged = cv2.Canny(img2, 200, 200) 
+    #cv2.imshow('img2', edged)
+    #cv2.waitKey(0) 
+  
+    # Finding Contours 
+    contours, hierarchy =  cv2.findContours(edged,  cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE) 
+  
+    for contour in contours:
+        (x,y,w,h) = cv2.boundingRect(contour)
+        #print("find")
+        #print(str(x) +'-'+str(y) +'-'+str(w+x) +'-'+str(y+h) )
+
+    #print("Number of Contours found = " + str((contours))) 
+  
+    # Draw all contours 
+    # -1 signifies drawing all contours 
+    #cv2.drawContours(img2, contours, -1, (0, 255, 0), 3) 
+
+    return(x, y, w+x, y+h)
+
+    #cv2.imshow('img2', img2)
+
+    #cv2.waitKey(0) 
 
 
 def rotacao(image):
@@ -144,8 +180,15 @@ transformations = {'Rotacao': rotacao,
 
 
 data = []
-while i <= images_to_generate:
-    image = random.choice(images)
+while i < images_to_generate:
+
+    # imagemm - cria uma img preta com um bounding no lugar q deveria estar na imagem da pista
+    imagemm = np.zeros((200,300,3), np.uint8)
+    cv2.rectangle(imagemm,(10,10),(200,100),(255,255,255),-1)
+    #cv2.imshow('img1', imagemm)
+    #cv2.waitKey(0)
+
+    image = images[i+1]
     original_image = io.imread(image)
     transformed_image = []
     n = 0       # variável para iterar até o número de transformação
@@ -157,21 +200,35 @@ while i <= images_to_generate:
         key = random.choice(list(transformations))
         print(key)
         transformed_image = transformations[key](original_image)
+        # faz as mesmas transformacoes na imagem preta
+        img2 = transformations[key](imagemm)
         n += 1
     nome = "augmented_image_%s.jpg" % (i)
     new_image_path = "%s/augmented_image_%s.jpg" % (augmented_path, i)
     # Converta uma imagem para o formato de byte sem sinal, com valores em [0, 255].
     transformed_image = img_as_ubyte(transformed_image)
+    img2 = img_as_ubyte(img2)
     # converter a imagem antes de gravar
     transformed_image = cv2.cvtColor(transformed_image, cv2.COLOR_BGR2RGB)
+    img2 = cv2.cvtColor(img2, cv2.COLOR_BGR2RGB)
     # Salvar a imagem ja convertida
     cv2.imwrite(new_image_path, transformed_image)
     i = i+1
     height, width, channels = transformed_image.shape
-    tentativa = (nome, height, width, 'pista', 0, 0, 0, 0)
-    data.append(tentativa)
-    
 
+    # chama a funcao que vai retornar o x & y min e max do bounding
+    xmin, ymin, xmax, ymax = minmax(img2)
+        
+    # elemento da lista data[] que armazena as informacoes da imagem transformada
+    tentativa = (nome, height, width, 'pista', xmin, ymin, xmax, ymax)
+    
+    #acrescenta "tentativa" a lista data[] (cada imagem gera uma tentativa diferente q e acrescido a data)
+    data.append(tentativa)
+
+    #cv2.imshow('img2', img2)
+    #cv2.waitKey(0) 
+
+# cria o documento csv que armazena os dados por imagem
 with open('teste.csv', "w", newline='') as file:
         writer = csv.writer(file)
         writer.writerow(["filename", "width", "height", "class", "xmin", "ymin", "xmax", "ymax"])
