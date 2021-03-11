@@ -182,13 +182,31 @@ transformations = {'Rotacao': rotacao,
 data = []
 while i < images_to_generate:
 
+    arquivo = ET.parse(images[i + 1])
+    bla = arquivo.getroot()
+
+    numeros = bla.findall("object/bndbox")
+    xmin = 0
+    ymin = 0
+    xmax = 0
+    ymax = 0
+
+    for item in numeros:
+        xmin = int(item.find("xmin").text)
+        ymin = int(item.find("ymin").text)
+        xmax = int(item.find("xmax").text)
+        ymax = int(item.find("ymax").text)
+
+    print(xmin, ymin, xmax, ymax)
+
     # imagemm - cria uma img preta com um bounding no lugar q deveria estar na imagem da pista
-    imagemm = np.zeros((200,300,3), np.uint8)
-    cv2.rectangle(imagemm,(10,10),(200,100),(255,255,255),-1)
+    imagemm = np.zeros((720,1280,3), np.uint8)
+    cv2.rectangle(imagemm,(xmin,ymin),(xmax,ymax),(255,255,255),-1)
+
     #cv2.imshow('img1', imagemm)
     #cv2.waitKey(0)
 
-    image = images[i+1]
+    image = images[i]
     original_image = io.imread(image)
     transformed_image = []
     n = 0       # variável para iterar até o número de transformação
