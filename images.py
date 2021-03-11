@@ -31,8 +31,8 @@ else:
 images = []
 for im in os.listdir(images_path):
     images.append(os.path.join(images_path, im))
-images_to_generate = 1  # qtd de imagens que vai gerar
-#images_to_generate = images_to_generate*2
+images_to_generate = 15  # qtd de imagens que vai gerar
+images_to_generate = images_to_generate*2
 i = 0                   # variavel para inteirar no images_to_generate
 
 
@@ -57,16 +57,20 @@ def minmax(img2):
         #print(str(x) +'-'+str(y) +'-'+str(w+x) +'-'+str(y+h) )
 
     #print("Number of Contours found = " + str((contours))) 
-  
+    cf = contours
     # Draw all contours 
     # -1 signifies drawing all contours 
     #cv2.drawContours(img2, contours, -1, (0, 255, 0), 3) 
-
-    return(x, y, w+x, y+h)
+    if (cf == []):
+        x = 0
+        y = 0
+        w = 0
+        h = 0
 
     #cv2.imshow('img2', img2)
 
     #cv2.waitKey(0) 
+    return(x, y, w+x, y+h)
 
 
 def rotacao(image):
@@ -182,7 +186,7 @@ transformations = {'Rotacao': rotacao,
 data = []
 while i < images_to_generate:
 
-    arquivo = ET.parse(images[i + 1])
+    arquivo = ET.parse(images[i])
     bla = arquivo.getroot()
 
     numeros = bla.findall("object/bndbox")
@@ -196,20 +200,23 @@ while i < images_to_generate:
         ymin = int(item.find("ymin").text)
         xmax = int(item.find("xmax").text)
         ymax = int(item.find("ymax").text)
+    
 
     print(xmin, ymin, xmax, ymax)
 
+
+    image = images[i + 1]
+    original_image = io.imread(image)
+    transformed_image = []
+    n = 0       # variável para iterar até o número de transformação
+
+    height, width, channels = original_image.shape
     # imagemm - cria uma img preta com um bounding no lugar q deveria estar na imagem da pista
-    imagemm = np.zeros((720,1280,3), np.uint8)
+    imagemm = np.zeros((height,width,channels), np.uint8)
     cv2.rectangle(imagemm,(xmin,ymin),(xmax,ymax),(255,255,255),-1)
 
     #cv2.imshow('img1', imagemm)
     #cv2.waitKey(0)
-
-    image = images[i]
-    original_image = io.imread(image)
-    transformed_image = []
-    n = 0       # variável para iterar até o número de transformação
 # escolha um número aleatório de transformação para aplicar na imagem
     transformation_count = random.randint(1, len(transformations))
     
@@ -231,7 +238,7 @@ while i < images_to_generate:
     img2 = cv2.cvtColor(img2, cv2.COLOR_BGR2RGB)
     # Salvar a imagem ja convertida
     cv2.imwrite(new_image_path, transformed_image)
-    i = i+1
+    i = i+2
     height, width, channels = transformed_image.shape
 
     # chama a funcao que vai retornar o x & y min e max do bounding
