@@ -31,8 +31,7 @@ else:
 images = []
 for im in os.listdir(images_path):
     images.append(os.path.join(images_path, im))
-images_to_generate = 15  # qtd de imagens que vai gerar
-images_to_generate = images_to_generate*2
+images_to_generate = 80  # qtd de imagens que vai gerar
 i = 0                   # variavel para inteirar no images_to_generate
 
 
@@ -76,10 +75,10 @@ def minmax(img2):
 def rotacao(image):
     # points for test.jpg
     cnt = np.array([
-            [[750, 250]],
-            [[0, 500]],
-            [[1000, 1050]],
-            [[1000, 500]]
+            [[350, 250]],
+            [[200, 600]],
+            [[400, 550]],
+            [[660, 500]]
         ])
     
     rect = cv2.minAreaRect(cnt)
@@ -204,8 +203,20 @@ transformations = {'Rotacao': rotacao,
 
 data = []
 while i < images_to_generate:
+    x = random.randrange(146)
 
-    arquivo = ET.parse(images[i])
+    arquivo = ET.parse(images[1])
+
+    if x == 0:
+        x = x + 1
+        arquivo = ET.parse(images[x])
+    if x % 2 != 0:
+        arquivo = ET.parse(images[x])
+    else:
+        x = x + 1
+        arquivo = ET.parse(images[x])
+
+    print (x)
     bla = arquivo.getroot()
 
     numeros = bla.findall("object/bndbox")
@@ -223,8 +234,7 @@ while i < images_to_generate:
 
     print(xmin, ymin, xmax, ymax)
 
-
-    image = images[i + 1]
+    image = images[x - 1]
     original_image = io.imread(image)
     transformed_image = []
     n = 0       # variável para iterar até o número de transformação
@@ -282,7 +292,7 @@ while i < images_to_generate:
     
     # Salvar a imagem ja convertida
     cv2.imwrite(new_image_path, transformed_image)
-    i = i+2
+    i = i+1
     height, width, channels = transformed_image.shape
 
     # chama a funcao que vai retornar o x & y min e max do bounding
