@@ -133,7 +133,26 @@ def ruidos_img(image):
 #Entrada: Imagem
 #Saída: Imagem com ruidos do tipo sal e pimenta
 
-    return random_noise(image)
+    #return random_noise(image)
+    row,col,ch = image.shape
+    s_vs_p = 0.5
+    amount = 0.05
+    out = np.copy(image)
+    # Salt mode
+    num_salt = np.ceil(amount * image.size * s_vs_p)
+    coords = [np.random.randint(0, i - 1, int(num_salt))
+        for i in image.shape]
+    out[coords] = 1
+
+    # Pepper mode
+    num_pepper = np.ceil(amount* image.size * (1. - s_vs_p))
+    coords = [np.random.randint(0, i - 1, int(num_pepper))
+        for i in image.shape]
+    out[coords] = 0
+    #cv2.imshow('blabs', out)
+    #cv2.waitKey(0)
+    #cv2.destroyAllWindows()
+    return out
 
 def brilhoo(image):
 
@@ -225,17 +244,42 @@ while i < images_to_generate:
         key = random.choice(list(transformations))
         print(key)
         transformed_image = transformations[key](original_image)
+        #print(transformed_image.dtype)
         # faz as mesmas transformacoes na imagem preta
         img2 = transformations[key](imagemm)
+
+        # mean normalization
+        image = transformed_image.astype(np.float32) / 255
+        image -= image.mean()
+        image /= image.std()
+        transformed_image = transformed_image.astype(np.uint8)
+        transformed_image = np.round(transformed_image).astype(np.uint8)
+
         n += 1
+    
+
+    #cv2.imshow('blabs', transformed_image)
+    #cv2.waitKey(0)
+    #cv2.destroyAllWindows()
+    
+
     nome = "augmented_image_%s.jpg" % (i)
     new_image_path = "%s/augmented_image_%s.jpg" % (augmented_path, i)
     # Converta uma imagem para o formato de byte sem sinal, com valores em [0, 255].
     transformed_image = img_as_ubyte(transformed_image)
     img2 = img_as_ubyte(img2)
+    #cv2.imshow('blabs', transformed_image)
+    #cv2.waitKey(0)
+    #cv2.destroyAllWindows()
+
     # converter a imagem antes de gravar
     transformed_image = cv2.cvtColor(transformed_image, cv2.COLOR_BGR2RGB)
     img2 = cv2.cvtColor(img2, cv2.COLOR_BGR2RGB)
+    #cv2.imshow('blabs', transformed_image)
+    #cv2.waitKey(0)
+    #cv2.destroyAllWindows()
+    
+    
     # Salvar a imagem ja convertida
     cv2.imwrite(new_image_path, transformed_image)
     i = i+2
