@@ -204,18 +204,8 @@ transformations = {'Rotacao': rotacao,
 
 data = []
 while i < images_to_generate:
-    #colocar o numero de imagens + arquivos que tem, para que as imagens possam ser escolhidas aleatoriamente
-    x = random.randrange(147)
 
     arquivo = ET.parse(images[i])
-    if x == 0:
-        arquivo = ET.parse(images[x])
-    elif x % 2 == 0:
-        arquivo = ET.parse(images[x])
-    else:
-        x = x + 1
-        arquivo = ET.parse(images[x])
-
     bla = arquivo.getroot()
 
     numeros = bla.findall("object/bndbox")
@@ -234,7 +224,7 @@ while i < images_to_generate:
     print(xmin, ymin, xmax, ymax)
 
 
-    image = images[x + 1]
+    image = images[i + 1]
     original_image = io.imread(image)
     transformed_image = []
     n = 0       # variável para iterar até o número de transformação
