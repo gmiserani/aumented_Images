@@ -250,11 +250,11 @@ while i < images_to_generate:
     for filename in nome:
         filename = filename.text
 
-    print(filename)
+    #print(filename)
     w = 0
     while w < 146:
       if images[w] == "/content/foto_simulador/%s" % (filename):
-        print(images[w])
+        #print(images[w])
         original_image = io.imread(images[w])
         break 
       w = w + 1
@@ -310,15 +310,16 @@ while i < images_to_generate:
     #cv2.imshow('blabs', transformed_image)
     #cv2.waitKey(0)
     #cv2.destroyAllWindows()
-    
+
+    # chama a funcao que vai retornar o x & y min e max do bounding
+    xmin, ymin, xmax, ymax = minmax(img2)
+
+    transformed_image = cv2.rectangle(transformed_image,(xmin,ymin),(xmax,ymax),(0,255,0), 3)
     
     # Salvar a imagem ja convertida
     cv2.imwrite(new_image_path, transformed_image)
     i = i+1
     height, width, channels = transformed_image.shape
-
-    # chama a funcao que vai retornar o x & y min e max do bounding
-    xmin, ymin, xmax, ymax = minmax(img2)
         
     # elemento da lista data[] que armazena as informacoes da imagem transformada
     tentativa = (nome, height, width, 'pista', xmin, ymin, xmax, ymax)
