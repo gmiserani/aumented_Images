@@ -33,7 +33,7 @@ else:
 images = []
 for im in os.listdir(images_path):
     images.append(os.path.join(images_path, im))
-images_to_generate = 10  # qtd de imagens que vai gerar
+images_to_generate = 50  # qtd de imagens que vai gerar
 i = 0                   # variavel para inteirar no images_to_generate
 
 
@@ -250,11 +250,12 @@ while i < images_to_generate:
     for filename in nome:
         filename = filename.text
 
-    #print(filename)
+    print(filename)
     w = 0
-    while w < 145:
-      if images[i] == filename:
-        original_image = io.imread(images[i])
+    while w < 146:
+      if images[w] == "/content/foto_simulador/%s" % (filename):
+        print(images[w])
+        original_image = io.imread(images[w])
         break 
       w = w + 1
     transformed_image = []
