@@ -207,7 +207,7 @@ data = []
 while i < images_to_generate:
     x = random.randrange(145)
 
-    arquivo = ET.parse(images[1])
+    #arquivo = ET.parse(images[1])
     
     if images[x].endswith('.xml'):
       arquivo = ET.parse(images[x])
