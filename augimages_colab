@@ -33,7 +33,7 @@ else:
 images = []
 for im in os.listdir(images_path):
     images.append(os.path.join(images_path, im))
-images_to_generate = 50  # qtd de imagens que vai gerar
+images_to_generate = 200  # qtd de imagens que vai gerar
 i = 0                   # variavel para inteirar no images_to_generate
 
 
@@ -74,7 +74,7 @@ def minmax(img2):
     return(x, y, w+x, y+h)
 
 
-def rotacao(image):
+def rotacao(image, imagemm):
     # points for test.jpg
     cnt = np.array([
             [[350, 250]],
@@ -108,27 +108,28 @@ def rotacao(image):
 
     # directly warp the rotated rectangle to get the straightened rectangle
     warped = cv2.warpPerspective(image, M, (width, height))
+    imagemm = cv2.warpPerspective(imagemm, M, (width, height))
 
-    return warped
+    return warped, imagemm
    
 
-def hrz_vira(image):
+def hrz_vira(image, imagemm):
 
 #Função responsável por fazer a inversão horizontal da imagem.
 #Entrada: Imagem
 #Saída: Imagem invertida no sentido horizontal
 
-    return np.fliplr(image)
+    return np.fliplr(image), np.fliplr(imagemm)
 
-def vtc_vira(image):
+def vtc_vira(image, imagemm):
 
 #Função responsável por fazer a inversão vertical da imagem.
 #Entrada: Imagem
 #Saída: Imagem invertida no sentido vertical
 
-    return np.flipud(image)
+    return np.flipud(image), np.flipud(imagemm)
 
-def ruidos_img(image):
+def ruidos_img(image, imagemm):
 
 #Função responsável por inserir ruídos randomincos do tipo sal e pimenta na imagem.
 #Entrada: Imagem
@@ -150,12 +151,10 @@ def ruidos_img(image):
     coords = [np.random.randint(0, i - 1, int(num_pepper))
         for i in image.shape]
     out[coords] = 0
-    #cv2.imshow('blabs', out)
-    #cv2.waitKey(0)
-    #cv2.destroyAllWindows()
-    return out
 
-def brilhoo(image):
+    return out, imagemm
+
+def brilhoo(image, imagemm):
 
 #Função responsável por incrementar brilho a imagem.
 #Entrada: Imagem
@@ -163,9 +162,10 @@ def brilhoo(image):
 
     brilhin = np.ones(image.shape, dtype="uint8") * 70
     aumentabrilho = cv2.add(image, brilhin)
-    return aumentabrilho
+    imagemm = cv2.add(imagemm, brilhin)
+    return aumentabrilho, imagemm
 
-def blur_img(image):
+def blur_img(image, imagemm):
 
 #Função responsável por aplicar um filtro mediana na imagem.
 #Entrada: Imagem
@@ -173,9 +173,10 @@ def blur_img(image):
 
     k_size = random.randrange(1,10,2)
     img_blur = cv2.medianBlur(image, k_size)
-    return img_blur
+    imagemm = cv2.medianBlur(imagemm, k_size)
+    return img_blur, imagemm
 
-def zoom(image):
+def zoom(image, imagemm):
 
 #Função responsável por aplicar zoom na imagem.
 #Entrada: Imagem
@@ -189,7 +190,9 @@ def zoom(image):
     w_start = random.randint(0, width-w_taken)
     image = image[h_start:h_start+h_taken, w_start:w_start+w_taken, :]
     image = cv2.resize(image, (hidth, width), cv2.INTER_CUBIC)
-    return image
+    imagemm = imagemm[h_start:h_start+h_taken, w_start:w_start+w_taken, :]
+    imagemm = cv2.resize(imagemm, (hidth, width), cv2.INTER_CUBIC)
+    return image, imagemm
 
 # Dicionario para ativar as funcoes
 transformations = {'Rotacao': rotacao,
@@ -205,14 +208,16 @@ transformations = {'Rotacao': rotacao,
 
 data = []
 while i < images_to_generate:
-    x = random.randrange(145)
+    x = random.randrange(79)
 
     #arquivo = ET.parse(images[1])
     
     if images[x].endswith('.xml'):
+      arq = images[x]
       arquivo = ET.parse(images[x])
     elif images[x + 1].endswith('.xml'):
       x = x + 1
+      arq = images[x]
       arquivo = ET.parse(images[x])
 
 
@@ -239,24 +244,25 @@ while i < images_to_generate:
     ymax = 0
 
     for item in numeros:
-        xmin = int(item.find("xmin").text)
-        ymin = int(item.find("ymin").text)
-        xmax = int(item.find("xmax").text)
-        ymax = int(item.find("ymax").text)
+        xmin1 = int(item.find("xmin").text)
+        ymin1 = int(item.find("ymin").text)
+        xmax1 = int(item.find("xmax").text)
+        ymax1 = int(item.find("ymax").text)
 
         
-    #print(xmin, ymin, xmax, ymax)
+    print("prim", xmin1, ymin1, xmax1, ymax1)
 
     for filename in nome:
         filename = filename.text
 
-    #print(filename)
+    print(filename, i)
+    print(arq)
     w = 0
-    while w < 146:
+    while w < 80:
       if images[w] == "/content/foto_simulador/%s" % (filename):
         #print(images[w])
         original_image = io.imread(images[w])
-        break 
+        break
       w = w + 1
     transformed_image = []
     n = 0       # variável para iterar até o número de transformação
@@ -264,21 +270,21 @@ while i < images_to_generate:
     height, width, channels = original_image.shape
     # imagemm - cria uma img preta com um bounding no lugar q deveria estar na imagem da pista
     imagemm = np.zeros((height,width,channels), np.uint8)
-    cv2.rectangle(imagemm,(xmin,ymin),(xmax,ymax),(255,255,255),-1)
+    imagemm = cv2.rectangle(imagemm,(xmin1,ymin1),(xmax1,ymax1),(255,255,255),-1)
 
     #cv2.imshow('img1', imagemm)
     #cv2.waitKey(0)
-# escolha um número aleatório de transformação para aplicar na imagem
+    # escolha um número aleatório de transformação para aplicar na imagem
     transformation_count = random.randint(1, len(transformations))
     
     while n <= transformation_count:
         # Escolha aleatorio do metodo a ser aplicado
         key = random.choice(list(transformations))
         print(key)
-        transformed_image = transformations[key](original_image)
+        transformed_image, img2 = transformations[key](original_image, imagemm)
         #print(transformed_image.dtype)
         # faz as mesmas transformacoes na imagem preta
-        img2 = transformations[key](imagemm)
+        #img2 = transformations[key](imagemm)
 
         # mean normalization
         image = transformed_image.astype(np.float32) / 255
@@ -313,6 +319,7 @@ while i < images_to_generate:
 
     # chama a funcao que vai retornar o x & y min e max do bounding
     xmin, ymin, xmax, ymax = minmax(img2)
+    print("seg",xmin, ymin, xmax, ymax)
 
     transformed_image = cv2.rectangle(transformed_image,(xmin,ymin),(xmax,ymax),(0,255,0), 3)
     
