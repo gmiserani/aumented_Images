@@ -14,6 +14,7 @@ import random
 import csv
 from lxml import etree
 import xml.etree.ElementTree as ET
+from google.colab.patches import cv2_imshow
 
 
 
@@ -33,7 +34,7 @@ else:
 images = []
 for im in os.listdir(images_path):
     images.append(os.path.join(images_path, im))
-images_to_generate = 200  # qtd de imagens que vai gerar
+images_to_generate = 100  # qtd de imagens que vai gerar
 i = 0                   # variavel para inteirar no images_to_generate
 
 
@@ -75,7 +76,7 @@ def minmax(img2):
 
 
 def rotacao(image, imagemm):
-    # points for test.jpg
+    # points for test
     cnt = np.array([
             [[350, 250]],
             [[200, 600]],
@@ -108,9 +109,9 @@ def rotacao(image, imagemm):
 
     # directly warp the rotated rectangle to get the straightened rectangle
     warped = cv2.warpPerspective(image, M, (width, height))
-    imagemm = cv2.warpPerspective(imagemm, M, (width, height))
-
-    return warped, imagemm
+    tnc = cv2.warpPerspective(imagemm, M, (width, height))
+   
+    return warped, tnc
    
 
 def hrz_vira(image, imagemm):
@@ -195,7 +196,7 @@ def zoom(image, imagemm):
     return image, imagemm
 
 # Dicionario para ativar as funcoes
-transformations = {'Rotacao': rotacao,
+transformations = {#'Rotacao': rotacao,
                    'Horizontal flip': hrz_vira,
                    'Vertical flip': vtc_vira,
                    'Ruidos': ruidos_img,
@@ -208,7 +209,7 @@ transformations = {'Rotacao': rotacao,
 
 data = []
 while i < images_to_generate:
-    x = random.randrange(79)
+    x = random.randrange(268)
 
     #arquivo = ET.parse(images[1])
     
@@ -217,6 +218,10 @@ while i < images_to_generate:
       arquivo = ET.parse(images[x])
     elif images[x + 1].endswith('.xml'):
       x = x + 1
+      arq = images[x]
+      arquivo = ET.parse(images[x])
+    elif images[x + 2].endswith('.xml'):
+      x = x + 2
       arq = images[x]
       arquivo = ET.parse(images[x])
 
@@ -258,7 +263,7 @@ while i < images_to_generate:
     print(filename, i)
     print(arq)
     w = 0
-    while w < 80:
+    while w < 270:
       if images[w] == "/content/foto_simulador/%s" % (filename):
         #print(images[w])
         original_image = io.imread(images[w])
@@ -341,4 +346,4 @@ while i < images_to_generate:
 with open('teste.csv', "w", newline='') as file:
         writer = csv.writer(file)
         writer.writerow(["filename", "width", "height", "class", "xmin", "ymin", "xmax", "ymax"])
-        writer.writerows(data)    
+        writer.writerows(data)
