@@ -196,7 +196,7 @@ def zoom(image, imagemm):
     return image, imagemm
 
 # Dicionario para ativar as funcoes
-transformations = {#'Rotacao': rotacao,
+transformations = {'Rotacao': rotacao,
                    'Horizontal flip': hrz_vira,
                    'Vertical flip': vtc_vira,
                    'Ruidos': ruidos_img,
@@ -335,6 +335,7 @@ while i < images_to_generate:
         
     # elemento da lista data[] que armazena as informacoes da imagem transformada
     tentativa = (nome, height, width, 'pista', xmin, ymin, xmax, ymax)
+    
     
     #acrescenta "tentativa" a lista data[] (cada imagem gera uma tentativa diferente q e acrescido a data)
     data.append(tentativa)
